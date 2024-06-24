@@ -28,6 +28,14 @@ defmodule CredoContrib.Check.FunctionBlockSyntaxTest do
     |> refute_issues(@described_check)
   end
 
+  test "no match error for function without body" do
+    """
+    def foo(_, _)
+    """
+    |> to_source_file()
+    |> refute_issues(@described_check)
+  end
+
   test "reports issue for mixed `do:` and `do ... end` definitions" do
     """
     def foo(1) do
