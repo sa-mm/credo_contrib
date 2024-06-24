@@ -60,20 +60,26 @@ defmodule CredoContrib.Check.FunctionBlockSyntax do
          acc
        )
        when def_call in [:def, :defp] and name_identifier in [:identifier, :paren_identifier] do
-    [block_start | rest] =
+    result =
       Enum.drop_while(rest, fn
         {:do, _} -> false
         {:kw_identifier, _, :do} -> false
         _ -> true
       end)
 
-    acc =
-      case block_start do
-        {:do, _} -> count_definition(acc, {def_call, name}, line_no, :long)
-        {:kw_identifier, _, :do} -> count_definition(acc, {def_call, name}, line_no, :short)
-      end
+    case result do
+      [] = rest ->
+        collect_definitions(rest, acc)
 
-    collect_definitions(rest, acc)
+      [block_start | rest] ->
+        acc =
+          case block_start do
+            {:do, _} -> count_definition(acc, {def_call, name}, line_no, :long)
+            {:kw_identifier, _, :do} -> count_definition(acc, {def_call, name}, line_no, :short)
+          end
+
+        collect_definitions(rest, acc)
+    end
   end
 
   defp collect_definitions([_ | rest], acc) do
